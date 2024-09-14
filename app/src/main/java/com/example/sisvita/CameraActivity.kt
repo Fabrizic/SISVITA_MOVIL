@@ -113,11 +113,16 @@ class CameraActivity : ComponentActivity() {
                     .addOnSuccessListener { faces ->
                         var detectedEmotion: String
                         for (face in faces) {
-                            val smileProbability = face.smilingProbability
+                            val smileProbability = face.smilingProbability ?: 0.0f
+                            val leftEyeOpenProbability = face.leftEyeOpenProbability ?: 0.0f
+                            val rightEyeOpenProbability = face.rightEyeOpenProbability ?: 0.0f
+
                             detectedEmotion = when {
-                                smileProbability != null && smileProbability > 0.5 -> "Feliz"
+                                smileProbability > 0.5 -> "Feliz"
+                                smileProbability < 0.2 && leftEyeOpenProbability < 0.5 && rightEyeOpenProbability < 0.5 -> "Triste"
                                 else -> "Neutro"
                             }
+
                             // Actualiza la UI en el hilo principal
                             runOnUiThread {
                                 findViewById<TextView>(R.id.emotionTextView).text = "Emoción: $detectedEmotion"

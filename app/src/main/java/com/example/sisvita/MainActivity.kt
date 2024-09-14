@@ -15,6 +15,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.io.IOException
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,11 +34,13 @@ class MainActivity : ComponentActivity() {
 
                 LoginScreen(
                     onLogin = { email, password ->
-                        if (email == "admin" && password == "admin") {
-                            startActivity(Intent(this, HomeActivity::class.java))
-                            finish()
-                        } else {
-                            showErrorDialog = true
+                        login(email, password) { success ->
+                            if (success) {
+                                startActivity(Intent(this, HomeActivity::class.java))
+                                finish()
+                            } else {
+                                showErrorDialog = true
+                            }
                         }
                     },
                     onSignUp = {
@@ -43,54 +50,52 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
 
-/*
-private fun login(email: String, password: String, callback: (Boolean) -> Unit) {
-    val client = OkHttpClient()
-    val json = JSONObject().apply {
-        put("correo", email)
-        put("contrasena", password)
-        put("tipousuarioid", 1)
-    }
-
-    val requestBody = json.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
-    val request = Request.Builder()
-        .url("http://sysvita-dswg13-production.up.railway.app/login")
-        .post(requestBody)
-        .build()
-
-    client.newCall(request).enqueue(object : Callback {
-        override fun onFailure(call: Call, e: IOException) {
-            callback(false)
+    private fun login(email: String, password: String, callback: (Boolean) -> Unit) {
+        val client = OkHttpClient()
+        val json = JSONObject().apply {
+            put("correo", email)
+            put("contrasena", password)
+            put("tipousuarioid", 1)
         }
 
-        override fun onResponse(call: Call, response: Response) {
-            response.use {
-                if (!it.isSuccessful) {
-                    callback(false)
-                    return
-                }
+        val requestBody = json.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
+        val request = Request.Builder()
+            .url("https://sysvita-dswg13-production.up.railway.app/login")
+            .post(requestBody)
+            .build()
 
-                val responseBody = it.body?.string()
-                if (responseBody != null) {
-                    val json1 = JSONObject(responseBody)
-                    val message = json1.optString("message")
-                    val status = json1.optInt("status")
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                callback(false)
+            }
 
-                    if (status == 200 && message == "Login exitoso") {
-                        callback(true)
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (!it.isSuccessful) {
+                        callback(false)
+                        return
+                    }
+
+                    val responseBody = it.body?.string()
+                    if (responseBody != null) {
+                        val json1 = JSONObject(responseBody)
+                        val message = json1.optString("message")
+                        val status = json1.optInt("status")
+
+                        if (status == 200 && message == "Login exitoso") {
+                            callback(true)
+                        } else {
+                            callback(false)
+                        }
                     } else {
                         callback(false)
                     }
-                } else {
-                    callback(false)
                 }
             }
-        }
-    })
+        })
+    }
 }
-*/
 
 @Composable
 fun LoginScreen(onLogin: (String, String) -> Unit, onSignUp: () -> Unit) {
