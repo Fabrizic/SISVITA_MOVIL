@@ -1,3 +1,4 @@
+// CameraActivity.kt
 package com.example.sisvita
 
 import android.Manifest
@@ -12,6 +13,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.camera.view.PreviewView
 import android.util.Log
+import android.widget.Button
 import android.widget.TextView
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
@@ -25,6 +27,7 @@ import com.google.mlkit.vision.face.FaceDetector
 class CameraActivity : ComponentActivity() {
 
     private lateinit var previewView: PreviewView
+    private var isUsingFrontCamera = true
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -36,11 +39,18 @@ class CameraActivity : ComponentActivity() {
         }
     }
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera)
 
         previewView = findViewById(R.id.previewView)
+        val switchCameraButton: Button = findViewById(R.id.switchCameraButton)
+
+        switchCameraButton.setOnClickListener {
+            isUsingFrontCamera = !isUsingFrontCamera
+            startCamera()
+        }
 
         // Solicita permisos de la cámara
         requestCameraPermission()
@@ -68,8 +78,12 @@ class CameraActivity : ComponentActivity() {
                     it.setAnalyzer(ContextCompat.getMainExecutor(this), FaceAnalyzer()) // Usa FaceAnalyzer
                 }
 
-            // Selecciona la cámara frontal
-            val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+            // Selecciona la cámara (frontal o trasera)
+            val cameraSelector = if (isUsingFrontCamera) {
+                CameraSelector.DEFAULT_FRONT_CAMERA
+            } else {
+                CameraSelector.DEFAULT_BACK_CAMERA
+            }
 
             try {
                 // Unbind previous use cases and bind with new use cases
@@ -82,7 +96,6 @@ class CameraActivity : ComponentActivity() {
             }
         }, ContextCompat.getMainExecutor(this))
     }
-
 
     private fun requestCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -105,7 +118,6 @@ class CameraActivity : ComponentActivity() {
         @SuppressLint("SetTextI18n")
         @OptIn(ExperimentalGetImage::class)
         override fun analyze(image: ImageProxy) {
-            @Suppress("UnsafeExperimentalUsageError")
             val mediaImage = image.image
             if (mediaImage != null) {
                 val inputImage = InputImage.fromMediaImage(mediaImage, image.imageInfo.rotationDegrees)

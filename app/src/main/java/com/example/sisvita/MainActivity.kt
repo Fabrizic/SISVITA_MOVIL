@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -12,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.sisvita.ui.theme.SISVITATheme
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -108,6 +110,14 @@ fun LoginScreen(onLogin: (String, String) -> Unit, onSignUp: () -> Unit) {
             .padding(16.dp),
         verticalArrangement = Arrangement.Center
     ) {
+        Image(
+            painter = painterResource(id = R.drawable._024),
+            contentDescription = "Login Image",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
         TextField(
             value = email,
             onValueChange = { email = it },

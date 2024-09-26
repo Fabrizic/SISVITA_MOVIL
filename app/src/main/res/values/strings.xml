@@ -13,4 +13,6 @@
     <string name="title_activity_home">Home</string>
     <string name="title_activity_emotion_recognition">Emotion Recognition</string>
     <string name="title_activity_camera">Camera</string>
+    <string name="emocion">Emoción:</string>
+    <string name="cambiar_modo">Cambiar modo</string>
 </resources>
